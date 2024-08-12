@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nextui-org/react": "^2.4.6",
     "@upstash/rag-chat": "^1.1.1",
     "@upstash/redis": "^1.34.0",
     "ai": "^3.3.6",
