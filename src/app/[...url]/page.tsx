@@ -1,6 +1,7 @@
 import { ChatWrapper } from "@/components/ChatWrapper";
 import { ragChat } from "@/lib/rag-chat";
 import { redis } from "@/lib/redis";
+import { cookies } from "next/headers";
 
 
 
@@ -16,12 +17,16 @@ function reconstructUrl({ url }: { url: string[] }) {                           
 }
 
 const Page = async({ params }: PageProps) => {
+  
+  const sessionCookie = cookies().get("sessionId")?.value                             // se obtiene la cookie
 
   const reconstructedUrl = reconstructUrl({url: params.url as string[]})
 
+  const sessionId = (reconstructedUrl + "--" + sessionCookie).replace(/\//g, "");     // se renombra para que sea única 
+
   const isAlreadyIndexed = await redis.sismember("indexed-urls", reconstructedUrl)    // Se comprueba si la url estaba ya indexada en la bd
 
-  const sessionId = "mock-session"
+  const initialMessages = await ragChat.history.getMessages({ amount: 10, sessionId });
 
   if(!isAlreadyIndexed){                                                              // Sino lo estaba se envia a ragchat
     await ragChat.context.add({
@@ -35,7 +40,7 @@ const Page = async({ params }: PageProps) => {
 
 
   return (
-    <ChatWrapper sessionId={sessionId} />
+    <ChatWrapper sessionId={sessionId} initialMessages={initialMessages} />
   )
 }
 
